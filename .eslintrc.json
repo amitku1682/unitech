@@ -1,0 +1,22 @@
+{
+  "extends": "next/core-web-vitals",
+  "rules": {
+    "react/no-unescaped-entities": "off",
+    "no-restricted-imports": [
+      "error",
+      {
+        "patterns": [
+          {
+            "group": [
+              "@/lib/data",
+              "*/lib/data",
+              "@/scripts/seed/*",
+              "*/scripts/seed/*"
+            ],
+            "message": "Do not import seed data into runtime app/components/lib code. All runtime data must come from PostgreSQL."
+          }
+        ]
+      }
+    ]
+  }
+}

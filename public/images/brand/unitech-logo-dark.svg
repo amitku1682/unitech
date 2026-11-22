@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 180" width="100%" height="100%" style="overflow: visible;">
+  <!-- 1. The Dynamic Dual-Arc Crescent Spiral (Authentic Unitech Trademark Emblem) -->
+  <g fill="#ffffff">
+    <!-- Outer Crescent Arc -->
+    <path d="M 104,110 C 90,110 74,98 64,80 C 50,56 50,34 68,18 C 86,2 120,2 144,14 C 166,26 178,44 174,68 C 172,74 168,76 164,74 C 160,70 162,64 164,56 C 166,40 156,26 138,16 C 118,6 88,6 74,20 C 60,34 60,52 72,72 C 80,86 92,96 104,96 C 108,96 110,102 108,106 C 107,109 106,110 104,110 Z" />
+
+    <!-- Inner Concentric Crescent Arc -->
+    <path d="M 112,96 C 104,96 92,86 84,72 C 74,54 76,38 90,26 C 104,14 126,14 144,24 C 154,30 160,40 158,54 C 157,58 153,60 150,58 C 147,56 148,52 149,46 C 150,36 145,28 138,24 C 124,16 106,16 96,26 C 84,36 84,48 92,62 C 98,72 106,82 114,82 C 117,82 119,87 117,91 C 115,94 114,96 112,96 Z" />
+  </g>
+
+  <!-- 2. Typography: UNiTECH TM -->
+  <g fill="#ffffff">
+    <text x="120" y="142" font-family="'Montserrat', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="900" font-size="36" letter-spacing="-0.5px" text-anchor="middle">
+      UN<tspan font-size="32px">i</tspan>TECH<tspan font-size="13px" font-weight="700" dy="-14" dx="2">TM</tspan>
+    </text>
+  </g>
+
+  <!-- 3. Tagline: "In Safe Hands" -->
+  <g fill="#ffffff">
+    <text x="120" y="172" font-family="'Montserrat', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="700" font-size="18" letter-spacing="0.2px" text-anchor="middle">
+      “In Safe Hands”
+    </text>
+  </g>
+</svg>

@@ -1,0 +1,80 @@
+# Dependencies
+/node_modules
+/.pnp
+.pnp.js
+.yarn/install-state.gz
+
+# Next.js Build Output
+/.next/
+/out/
+/build
+/dist
+
+# Environment Variables
+.env
+.env*
+!.env.example
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.env*.local
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Vercel & Deployment
+.vercel
+
+# TypeScript
+*.tsbuildinfo
+
+# OS Metadata
+.DS_Store
+*.pem
+Thumbs.db
+ehthumbs.db
+
+# IDE & Editor Configs
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Temporary / Agent Scratch
+.agents/
+mobile-audit-screenshots/
+.gemini/
+cat-*
+issue-*
+
+# Browser profiles, test artifacts and screenshots
+.chrome-temp-*/
+.chrome*/
+*.crdownload
+playwright-report/
+test-results/
+audit/screenshots/
+
+# Runtime uploads & dynamic files (Persisted in PostgreSQL uploaded_files)
+public/uploads/products/gal-*
+public/uploads/products/artboard-*
+public/uploads/products/front-*
+public/downloads/*.pdf
+
+# Database backups & archives
+*.sql
+!migrations/*.sql
+*.zip
+audit/*.sql
+
+
+
+
