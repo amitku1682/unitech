@@ -35,6 +35,7 @@ const ALLOWED_ROOT_FILES = new Set([
   'postcss.config.js',
   'next-env.d.ts',
   'middleware.ts',
+  'instrumentation.ts',
   'Dockerfile',
   'docker-compose.yml',
   '.dockerignore',
@@ -485,8 +486,8 @@ function testUnzipAndScan() {
     stdio: 'inherit',
   });
 
-  // Verify migrations 0001 through 0013 are present
-  console.log('\nVerifying SQL migrations (0001-0014)...');
+  // Verify migrations 0001 through 0015 are present
+  console.log('\nVerifying SQL migrations (0001-0015)...');
   const migDir = path.join(TEST_EXTRACT_DIR, 'migrations');
   const expectedMigrations = [
     '0001_baseline.sql',
@@ -503,6 +504,7 @@ function testUnzipAndScan() {
     '0012_category_cards_link.sql',
     '0013_email_settings.sql',
     '0014_admin_password_resets.sql',
+    '0015_drop_product_warranty.sql',
   ];
 
   for (const m of expectedMigrations) {
@@ -511,7 +513,55 @@ function testUnzipAndScan() {
       throw new Error(`Missing expected migration file in handover: migrations/${m}`);
     }
   }
-  console.log('✅ All migrations 0001 through 0014 are present in migrations/');
+  console.log('✅ All migrations 0001 through 0015 are present in migrations/');
+
+  // Packaging Guard: Verify docker-compose.yml and .env.example
+  console.log('\n--- VERIFYING DOCKER-COMPOSE AND .ENV.EXAMPLE PACKAGING GUARDS ---');
+  const extractedCompose = path.join(TEST_EXTRACT_DIR, 'docker-compose.yml');
+  if (!fs.existsSync(extractedCompose)) {
+    throw new Error('Packaging guard failed: Missing docker-compose.yml in extracted package');
+  }
+  const composeText = fs.readFileSync(extractedCompose, 'utf8');
+
+  // Match unitech-app service block
+  const appMatch = composeText.match(/unitech-app:[\s\S]*?(?=\n\s\s\w+:|\nvolumes:|$)/);
+  if (!appMatch) {
+    throw new Error('Packaging guard failed: unitech-app service not found in extracted docker-compose.yml');
+  }
+  const appBlock = appMatch[0];
+
+  if (!appBlock.includes('env_file')) {
+    throw new Error('Packaging guard failed: unitech-app service in docker-compose.yml must contain env_file');
+  }
+  if (!appBlock.includes('SETTINGS_ENCRYPTION_KEY')) {
+    throw new Error('Packaging guard failed: unitech-app service in docker-compose.yml must contain SETTINGS_ENCRYPTION_KEY');
+  }
+  if (!appBlock.includes('ADMIN_SESSION_SECRET')) {
+    throw new Error('Packaging guard failed: unitech-app service in docker-compose.yml must contain ADMIN_SESSION_SECRET');
+  }
+
+  // Verify .env.example required keys
+  const extractedEnvEx = path.join(TEST_EXTRACT_DIR, '.env.example');
+  if (!fs.existsSync(extractedEnvEx)) {
+    throw new Error('Packaging guard failed: Missing .env.example in extracted package');
+  }
+  const envExText = fs.readFileSync(extractedEnvEx, 'utf8');
+  const requiredEnvKeys = [
+    'DATABASE_URL',
+    'SETTINGS_ENCRYPTION_KEY',
+    'ADMIN_SESSION_SECRET',
+    'APP_BASE_URL',
+    'NEXT_PUBLIC_BASE_URL',
+    'COOKIE_SECURE',
+  ];
+
+  for (const k of requiredEnvKeys) {
+    const rx = new RegExp(`^${k}=`, 'm');
+    if (!rx.test(envExText)) {
+      throw new Error(`Packaging guard failed: .env.example must list ${k}`);
+    }
+  }
+  console.log('✅ Packaging guards PASSED: docker-compose.yml has env_file and both keys; .env.example defines all required variables.');
 
   // Verify empty uploads and downloads .gitkeep
   const uploadsGitkeep = path.join(TEST_EXTRACT_DIR, 'public', 'uploads', '.gitkeep');

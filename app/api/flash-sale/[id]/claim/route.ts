@@ -3,7 +3,7 @@ import { processFlashSaleClaim } from "@/lib/server/flashSaleStore";
 
 export async function POST(
   req: Request,
-  props: { params: Promise<{ id: string }> | { id: string } }
+  props: { params: Promise<{ id: string }> }
 ) {
   try {
     const params = await props.params;

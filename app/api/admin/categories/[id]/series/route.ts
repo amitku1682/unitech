@@ -32,10 +32,8 @@ const ReorderSeriesSchema = z.object({
   orderedIds: z.array(z.string().trim().min(1)),
 });
 
-export async function GET(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function GET(req: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const auth = await requireAdmin(req);
   if (isAuthError(auth)) return auth;
 
@@ -49,10 +47,8 @@ export async function GET(
   }
 }
 
-export async function POST(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function POST(req: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const auth = await requireAdmin(req);
   if (isAuthError(auth)) return auth;
 
@@ -93,12 +89,13 @@ export async function POST(
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  props: { params: Promise<{ id: string }> }
 ) {
   const auth = await requireAdmin(req);
   if (isAuthError(auth)) return auth;
 
   try {
+    const params = await props.params;
     const body = await req.json();
     const parsed = UpdateSeriesSchema.safeParse(body);
     if (!parsed.success) {
@@ -125,12 +122,13 @@ export async function PUT(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  props: { params: Promise<{ id: string }> }
 ) {
   const auth = await requireAdmin(req);
   if (isAuthError(auth)) return auth;
 
   try {
+    const params = await props.params;
     const { searchParams } = new URL(req.url);
     const seriesId = searchParams.get("seriesId");
     if (!seriesId) {

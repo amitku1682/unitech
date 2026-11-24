@@ -50,7 +50,6 @@ export function ProductForm({
   const [dealerPrice, setDealerPrice] = useState<number | "">("");
   const [mrp, setMrp] = useState<number | "">("");
   const [stockQuantity, setStockQuantity] = useState<number | "">("");
-  const [warrantyYears, setWarrantyYears] = useState<number | "">("");
   const [isBestseller, setIsBestseller] = useState(false);
   const [isNew, setIsNew] = useState(true);
   const [imageUrl, setImageUrl] = useState("");
@@ -120,7 +119,6 @@ export function ProductForm({
       setDealerPrice(product.dealerPrice ?? "");
       setMrp(product.mrp ?? "");
       setStockQuantity(product.stockQuantity ?? "");
-      setWarrantyYears(product.warrantyYears ?? 2);
       setIsBestseller(Boolean(product.isBestseller));
       setIsNew(Boolean(product.isNew));
       setImageUrl(product.imageUrl || "");
@@ -143,7 +141,6 @@ export function ProductForm({
       setDealerPrice("");
       setMrp("");
       setStockQuantity("");
-      setWarrantyYears(2);
       setIsBestseller(false);
       setIsNew(true);
       setImageUrl("");
@@ -391,7 +388,6 @@ export function ProductForm({
       dealerPrice: numDealerPrice,
       mrp: numMrp,
       stockQuantity: stockQuantity !== "" ? Number(stockQuantity) : 0,
-      warrantyYears: warrantyYears !== "" ? Number(warrantyYears) : 2,
       isBestseller,
       isNew,
       imageUrl: imageUrl.trim() || undefined,
@@ -776,7 +772,7 @@ export function ProductForm({
               </div>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="font-bold text-slate-700 block mb-1">Initial Stock:</label>
                 <input
@@ -786,21 +782,6 @@ export function ProductForm({
                   value={stockQuantity}
                   onChange={(e) =>
                     setStockQuantity(e.target.value === "" ? "" : Number(e.target.value))
-                  }
-                  className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-300 text-slate-900 font-bold focus:bg-white focus:outline-none focus:border-unitech-red"
-                />
-              </div>
-
-              <div>
-                <label className="font-bold text-slate-700 block mb-1">Warranty (Years):</label>
-                <input
-                  type="number"
-                  min={1}
-                  max={10}
-                  placeholder="e.g. 2"
-                  value={warrantyYears}
-                  onChange={(e) =>
-                    setWarrantyYears(e.target.value === "" ? "" : Number(e.target.value))
                   }
                   className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-300 text-slate-900 font-bold focus:bg-white focus:outline-none focus:border-unitech-red"
                 />

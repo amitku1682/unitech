@@ -2,9 +2,7 @@
 const nextConfig = {
   reactStrictMode: true,
   output: "standalone",
-  experimental: {
-    serverComponentsExternalPackages: ["sharp"],
-  },
+  serverExternalPackages: ["sharp"],
   async headers() {
     return [
       {

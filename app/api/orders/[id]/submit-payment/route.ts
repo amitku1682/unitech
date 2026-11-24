@@ -9,10 +9,8 @@ export const dynamic = "force-dynamic";
  * Submits customer UTR reference for an existing AWAITING_PAYMENT draft order.
  * Updates payment_status to PENDING_VERIFICATION and enforces duplicate-UTR defense.
  */
-export async function PATCH(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function PATCH(req: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   try {
     const orderId = params.id?.trim();
     if (!orderId) {

@@ -10,9 +10,9 @@ Replace `<your-domain>` with your website address (or `http://<your-server-ip>` 
 
 - [ ] Website opens at `https://<your-domain>` and the admin login at `https://<your-domain>/admin`
 - [ ] Health check returns 200: `curl -s -o /dev/null -w "%{http_code}\n" http://127.0.0.1:3000/api/health` (or `http://localhost/api/health` without HTTPS)
-- [ ] `docker exec unitech-staging-web node scripts/migrate.js` reports all 14 migrations as already applied
+- [ ] `docker exec unitech-staging-web node scripts/migrate.js` completes without errors (all 15 migrations applied, last one `0015_drop_product_warranty`)
 - [ ] Admin account created with `docker exec -it unitech-staging-web node scripts/create-admin.js`
-- [ ] **Email Settings** configured (Admin → Email Settings) and a test email received
+- [ ] **Email Notifications** configured (Admin → Email Notifications) and a test email received
 - [ ] **Payment Settings** configured (Admin → Payment Settings)
 - [ ] **Social & Platform Links** checked (Admin → Social & Platform Links)
 
@@ -65,7 +65,8 @@ Replace `<your-domain>` with your website address (or `http://<your-server-ip>` 
 ---
 
 ## 5. Flash sale pop-up (if a flash sale is published)
-- [ ] Desktop: centred pop-up; mobile: bottom sheet
+- [ ] Desktop: two-column pop-up; tablet: centred single-column pop-up; phone: bottom sheet — nothing cut off, no sideways scrolling
+- [ ] "What's included" items show their images (no broken images)
 - [ ] Countdown and stock bar are shown
 - [ ] The main button works
 - [ ] Closing (X, outside click or Esc) works and the page scrolls normally afterwards
@@ -82,7 +83,8 @@ Replace `<your-domain>` with your website address (or `http://<your-server-ip>` 
 
 ## 7. Product page
 - [ ] Main image and up to 6 gallery photos; clicking a thumbnail changes the main image; zoom / full-screen works on desktop, swipe works on mobile
-- [ ] Specifications are shown
+- [ ] Specifications are shown, with **Engineering Highlights** directly below them (right column on desktop)
+- [ ] Cards under the image: **Pan-India**, **GST Invoice · Full ITC claim**, **BIS & CE** (no warranty card)
 - [ ] Price and dealer/volume prices are shown
 - [ ] Datasheet download (if the product has one) opens the PDF
 - [ ] Adding to cart works
@@ -132,6 +134,7 @@ Replace `<your-domain>` with your website address (or `http://<your-server-ip>` 
 - [ ] Category links come from the categories (inactive or hidden ones are not shown)
 - [ ] Social icons open the correct pages (from Admin → Social & Platform Links); empty or inactive links are hidden
 - [ ] **No "Admin Portal" link** anywhere in the footer
+- [ ] "Contact & Support" column shows **OEM**
 
 ---
 
@@ -144,7 +147,7 @@ Replace `<your-domain>` with your website address (or `http://<your-server-ip>` 
 - [ ] **Sign Out** logs out; the browser Back button does not show admin data
 
 ### 13.2 Products (Product Images & Models / Pricing & Stock Ticker)
-- [ ] "Add New Hardware Product" opens an **empty** form (no demo values)
+- [ ] "Add New Hardware Product" opens an **empty** form (no demo values) and has **no warranty field** (add warranty as a Technical Specification instead)
 - [ ] Category dropdown lists the categories; "＋ New category…" creates one and selects it; series dropdown follows the category and "＋ New series…" works
 - [ ] Price rules are checked (dealer ≤ online price ≤ MRP)
 - [ ] Editing a price or stock updates the product page
@@ -172,6 +175,7 @@ Replace `<your-domain>` with your website address (or `http://<your-server-ip>` 
 
 ### 13.7 Flash Sale Pop-up
 - [ ] Edit, publish and unpublish; the pop-up follows
+- [ ] Each "What's In The Kit" item: Upload, Quick Pick, preview and Remove image work; images show in the pop-up on phone, tablet and desktop
 
 ### 13.8 Catalogues & Datasheets
 - [ ] Upload a PDF, set it live/hidden, delete a test PDF
@@ -192,7 +196,8 @@ Replace `<your-domain>` with your website address (or `http://<your-server-ip>` 
 - [ ] Upload a QR (PNG): it saves, and a warning appears if its UPI ID differs from the entered one
 - [ ] Checkout uses the new details (test with a UPI app, do not pay)
 
-### 13.12 Email Settings
+### 13.12 Email Notifications
+- [ ] No "Email is disabled: SETTINGS_ENCRYPTION_KEY is not set" message
 - [ ] Save SMTP details; after reloading, the password stays hidden
 - [ ] **Send test email** arrives (check spam too)
 - [ ] With notifications on: placing an order sends "Order received" to the customer and an alert to the admin email; confirming payment sends "Payment confirmed"

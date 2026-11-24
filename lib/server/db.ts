@@ -24,6 +24,10 @@ import {
 } from "@/lib/types";
 import { encryptSecret, decryptSecret, getEncryptionKey } from "@/lib/server/crypto";
 import { LeadershipDirector } from "@/lib/leadershipData";
+import { logStartupEnvWarnings } from "@/lib/server/startupCheck";
+
+// Run server startup environment check once
+logStartupEnvWarnings();
 
 // Database Connection String from environment
 const DATABASE_URL =
@@ -262,7 +266,6 @@ function rowToProduct(row: any): Product {
     rating: Number(row.rating),
     reviewCount: Number(row.review_count),
     datasheetPdfUrl: row.datasheet_pdf_url || undefined,
-    warrantyYears: Number(row.warranty_years),
     connectivity: row.connectivity || undefined,
     specs: specsObj,
     highlights: highlightsArr,
@@ -498,9 +501,9 @@ export async function createDbProduct(product: Product): Promise<Product> {
   await db.query(
     `INSERT INTO products (
       id, slug, name, model_code, category, category_label, price, dealer_price, mrp, stock_quantity,
-      is_bestseller, is_new, is_promo, rating, review_count, datasheet_pdf_url, warranty_years,
+      is_bestseller, is_new, is_promo, rating, review_count, datasheet_pdf_url,
       connectivity, specs, highlights, image_url, placeholder_label, placeholder_subtext, sort_order
-    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, 0)
+    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, 0)
     ON CONFLICT (id) DO UPDATE SET
       name = EXCLUDED.name,
       price = EXCLUDED.price,
@@ -526,7 +529,6 @@ export async function createDbProduct(product: Product): Promise<Product> {
       product.rating,
       product.reviewCount,
       product.datasheetPdfUrl || null,
-      product.warrantyYears,
       product.connectivity || null,
       JSON.stringify(specs),
       JSON.stringify(product.highlights || []),
@@ -604,10 +606,6 @@ export async function updateDbProduct(id: string, updates: Partial<Product>): Pr
   if (updates.isNew !== undefined) {
     fields.push(`is_new = $${index++}`);
     values.push(updates.isNew);
-  }
-  if (updates.warrantyYears !== undefined) {
-    fields.push(`warranty_years = $${index++}`);
-    values.push(updates.warrantyYears);
   }
   if (updates.specs !== undefined) {
     fields.push(`specs = $${index++}`);

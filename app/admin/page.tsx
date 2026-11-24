@@ -4598,12 +4598,6 @@ export default function AdminPage() {
                             No technical specifications added yet. Click &apos;Edit Specs & Features&apos; to add parameters.
                           </div>
                         )}
-                        <div className="grid grid-cols-3 p-3 bg-slate-50/50 hover:bg-slate-50">
-                          <span className="font-bold text-slate-600 col-span-1">Warranty</span>
-                          <span className="text-emerald-700 font-bold col-span-2">
-                            {specsModalProduct.warrantyYears} Years Manufacturer Replacement Warranty
-                          </span>
-                        </div>
                       </div>
                     </div>
 

@@ -4,10 +4,11 @@ import { getDbProductBySlug } from "@/lib/server/db";
 export const dynamic = "force-dynamic";
 
 type Props = {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 };
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata(props: Props): Promise<Metadata> {
+  const params = await props.params;
   try {
     const product = await getDbProductBySlug(params.slug);
     if (!product) {

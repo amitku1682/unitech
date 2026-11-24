@@ -6,10 +6,8 @@ import path from "path";
 
 export const dynamic = "force-dynamic";
 
-export async function GET(
-  req: NextRequest,
-  { params }: { params: { filename: string } }
-) {
+export async function GET(req: NextRequest, props: { params: Promise<{ filename: string }> }) {
+  const params = await props.params;
   try {
     const rawFilename = params.filename || "";
     let decodedFilename = rawFilename;

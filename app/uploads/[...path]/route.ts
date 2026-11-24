@@ -14,10 +14,8 @@ const ALLOWED_MIME_TYPES: Record<string, string> = {
   ".pdf": "application/pdf",
 };
 
-export async function GET(
-  req: NextRequest,
-  { params }: { params: { path?: string[] } }
-) {
+export async function GET(req: NextRequest, props: { params: Promise<{ path?: string[] }> }) {
+  const params = await props.params;
   try {
     const segments = params.path || [];
     if (!segments.length) {

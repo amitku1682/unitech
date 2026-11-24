@@ -3,7 +3,7 @@ import { useEffect, RefObject } from 'react';
 const EASE_SCAN = 'cubic-bezier(.45,0,.25,1)';
 const EASE_OUT = 'cubic-bezier(.2,.7,.2,1)';
 
-export function useScanReveal(rootRef: RefObject<HTMLElement>, isActive: boolean, activationKey: number) {
+export function useScanReveal(rootRef: RefObject<HTMLElement | null>, isActive: boolean, activationKey: number) {
   useEffect(() => {
     const root = rootRef.current;
     if (!root || !isActive) return;

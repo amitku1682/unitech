@@ -241,7 +241,7 @@ export function Footer() {
                   </li>
                   <li>
                     <Link href="/inquiry?type=SERVICE_WARRANTY" className="hover:text-white transition-colors">
-                      Warranty & RMA Center
+                      OEM
                     </Link>
                   </li>
                   <li>

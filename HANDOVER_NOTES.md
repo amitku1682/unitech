@@ -13,10 +13,11 @@ You receive two files. You need both:
 
 ## 1. System Overview & Technology Stack
 
-- **Framework:** Next.js 14 (App Router, React 18, TypeScript)
+- **Framework:** Next.js 15.5.29 (App Router, React 19, TypeScript)
+- **Runtime:** Node.js 24 (inside Docker)
 - **Database:** PostgreSQL 16 via `pg` (node-postgres connection pool)
 - **Styling:** Tailwind CSS with Lucide Icons
-- **Image Processing:** Sharp (image optimization and EXIF metadata stripping)
+- **Image Processing:** Sharp 0.35 (image optimization and EXIF metadata stripping)
 - **Authentication:** Server-side sessions stored in PostgreSQL with HTTP-only, SameSite=Strict cookies; passwords hashed with bcrypt (cost factor 12)
 - **Payments & Orders:** Direct UPI and bank transfer (NEFT/RTGS/IMPS) with mandatory UTR reference; server-side order calculation; admin payment verification. Razorpay is not used.
 - **Infrastructure:** Docker and Docker Compose with a multi-stage production build
@@ -41,7 +42,6 @@ You receive two files. You need both:
 - Until Payment Settings are filled in, checkout shows a "please contact us on WhatsApp" message instead of payment details.
 
 ### 2.3 Admin Login & Security
-- Hard-coded PINs and demo credentials were removed.
 - Admin accounts and login sessions are stored in the database; sessions last 8 hours.
 - Every admin page and admin API requires a valid login on the server.
 - Login is blocked for 15 minutes after 5 wrong attempts.
@@ -49,9 +49,10 @@ You receive two files. You need both:
 
 ### 2.4 Content Management (all in the admin panel)
 - Products, prices, stock, product image galleries (up to 6 photos)
+- **Warranty:** there is no separate warranty field. Add warranty as a **Technical Specification** row (e.g. "Warranty: 2 Years") on the products where it applies.
 - **Categories & Series** — new categories appear automatically in the menu, mobile menu, footer, catalogue filters, search and the homepage "Popular" tabs
 - **Homepage Category Cards** — the large category cards on the homepage; each card is linked to a catalogue category
-- Hero Cards Studio (homepage slides), Flash Sale Pop-up, Top Header Ticker (messages, speed, phone, WhatsApp)
+- Hero Cards Studio (homepage slides), **Flash Sale Pop-up** (including an uploaded image for each kit item), Top Header Ticker (messages, speed, phone, WhatsApp)
 - Catalogues & Datasheets (PDFs), Authorized Dealers, Google Reviews, About Page leadership
 - Social & Platform Links, Customer Enquiries
 
@@ -71,12 +72,15 @@ You receive two files. You need both:
 - **Change password:** admin header → "Change Password". Other devices are logged out.
 - **Additional admins:** see Step 7 below.
 
+### 2.8 Responsive Design
+The website and admin panel are tested on phones, tablets, laptops and large screens (from 320px to 2560px wide), including the flash sale pop-up, menus and product pages.
+
 ---
 
 ## 3. Installation Guide (new server)
 
 ### Requirements
-- Ubuntu 22.04 or 24.04 server (2 vCPU, 4 GB RAM recommended, 25 GB disk)
+- Ubuntu 22.04 or 24.04 server: **2 vCPU, 1–2 GB RAM with a 2 GB swap file (Step 1b), 40 GB disk**
 - Your domain's DNS A record pointing to the server's IP address
 - Firewall: ports 22, 80 and 443 open
 
@@ -87,6 +91,13 @@ sudo usermod -aG docker $USER
 ```
 Log out and log in again, then check: `docker --version` and `docker compose version`.
 
+### Step 1b – Add a 2 GB swap file (required on servers with 1–2 GB RAM)
+```bash
+sudo fallocate -l 2G /swapfile && sudo chmod 600 /swapfile && sudo mkswap /swapfile && sudo swapon /swapfile && echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
+swapon --show
+```
+The last command must show `/swapfile` with size 2G.
+
 ### Step 2 – Upload and unpack
 Upload both files to your home folder (for example with WinSCP), then run:
 ```bash
@@ -94,7 +105,7 @@ sudo apt-get install -y unzip
 mkdir -p ~/unitech && unzip -q ~/unitech-handover-v1.0.zip -d ~/unitech
 cd ~/unitech && ls migrations | tail -1
 ```
-The last line must show `0014_admin_password_resets.sql`.
+The last line must show `0015_drop_product_warranty.sql`.
 
 ### Step 3 – Create the configuration file (.env)
 Replace `unitechcctv.com` with your domain if it is different. Secure passwords and keys are generated automatically.
@@ -119,6 +130,7 @@ ADMIN_SESSION_SECRET=$(openssl rand -hex 32)
 EOF
 chmod 600 .env
 ```
+All variables in `.env` are passed to the website automatically (`env_file`). After changing `.env`, run `docker compose up -d` to apply.
 Keep a copy of this `.env` file in a password manager. It contains your database password and encryption keys. If `SETTINGS_ENCRYPTION_KEY` is lost or changed, re-enter the SMTP password in Email Settings.
 
 ### Step 4 – Start the database and load your data
@@ -144,13 +156,12 @@ curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | sudo gpg --d
 curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' | sudo tee /etc/apt/sources.list.d/caddy-stable.list
 sudo chmod o+r /usr/share/keyrings/caddy-stable-archive-keyring.gpg /etc/apt/sources.list.d/caddy-stable.list
 sudo apt-get update && sudo apt-get install -y caddy
-sudo tee /etc/caddy/Caddyfile > /dev/null << 'EOF'
-unitechcctv.com, www.unitechcctv.com {
-    reverse_proxy 127.0.0.1:3000
-}
-EOF
+D=unitechcctv.com
+printf '%s, www.%s {\n\treverse_proxy 127.0.0.1:3000\n}\n' "$D" "$D" | sudo tee /etc/caddy/Caddyfile > /dev/null
+sudo caddy validate --config /etc/caddy/Caddyfile
 sudo systemctl reload caddy
 ```
+`caddy validate` must end with "Valid configuration".
 **No domain yet?** Skip this step, keep `- "80:3000"`, and in `.env` set `COOKIE_SECURE=false` and both URLs to `http://<your-server-ip>`. Do Step 5 later when the domain is ready (then set `COOKIE_SECURE=true`, both URLs to `https://<your-domain>`, and run `docker compose up -d`).
 
 ### Step 6 – Build and start the website
@@ -161,7 +172,7 @@ sleep 40 && docker compose ps
 docker exec unitech-staging-web node scripts/migrate.js
 curl -s -o /dev/null -w "health: %{http_code}\n" http://127.0.0.1:3000/api/health
 ```
-Both containers must show "healthy", the migration must report all 14 migrations as already applied, and the health check must print `health: 200`.
+Both containers must show "healthy". The migration applies any migration not yet in your data file (for example `0015`) and reports the others as already applied. The health check must print `health: 200`.
 If you skipped Step 5, check health with:
 ```bash
 curl -s -o /dev/null -w "health: %{http_code}\n" http://localhost/api/health
@@ -200,11 +211,13 @@ One backup contains everything (data, images and PDFs). Copy backups off the ser
 - "Permission denied" on docker commands: put `sudo` in front of the command
 - Login says "Invalid email or password": check spelling (passwords are case-sensitive); after 5 wrong attempts, login is blocked for 15 minutes
 - No reset email: check spam, and that **Send test email** works in Email Settings
+- Email Settings says "Email is disabled: SETTINGS_ENCRYPTION_KEY is not set": check that `.env` contains `SETTINGS_ENCRYPTION_KEY`, then run `docker compose up -d`
+- Build stops with an out-of-memory error: check that the swap file is active (`swapon --show`, Step 1b)
 
 ---
 
 ## 4. Database Migrations (reference)
-`scripts/migrate.js` applies `migrations/0001` to `0014` in order and skips migrations already applied. The provided data file already contains all 14, so on a new installation it reports "Already Applied" for each.
+`scripts/migrate.js` applies `migrations/0001` to `0015` in order and skips migrations already applied.
 
 | Migration | Purpose |
 |---|---|
@@ -222,6 +235,7 @@ One backup contains everything (data, images and PDFs). Copy backups off the ser
 | 0012_category_cards_link | Homepage category cards linked to categories |
 | 0013_email_settings | Email settings and email logs |
 | 0014_admin_password_resets | Password reset tokens |
+| 0015_drop_product_warranty | Removes the product warranty field (warranty is added as a specification instead) |
 
 ---
 
@@ -233,7 +247,11 @@ One backup contains everything (data, images and PDFs). Copy backups off the ser
 - [ ] Payment Settings configured and checkout QR tested (no payment)
 - [ ] "Forgot password?" tested once
 - [ ] Prices, contact details, social links and ticker texts checked
+- [ ] Warranty added as a Technical Specification on products where it applies
 - [ ] Auto-generated PDFs reviewed (`dvr-storage-matrix.pdf`, `datasheet-power-supplies.pdf`)
 - [ ] Privacy policy page added (the website collects customer contact details)
 - [ ] Nightly backups enabled (Step 9) and copied off the server regularly
-- [ ] Plan a future Next.js upgrade (version 14.2 has known issues that are mitigated but not fully fixed)
+
+## 6. Maintenance Notes
+- Keep Next.js on the latest 15.5.x patch release (security fixes are published for this line). Plan an upgrade to the next major version in the future.
+- `zod` has a known advisory fixed only in version 4 (a breaking upgrade). The website limits all form input sizes, which reduces the risk; plan the upgrade with the next major update.

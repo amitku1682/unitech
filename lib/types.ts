@@ -60,7 +60,6 @@ export interface Product {
   rating: number;
   reviewCount: number;
   datasheetPdfUrl?: string;
-  warrantyYears: number;
   connectivity?: "wired" | "wireless";
   specs: Record<string, string>;
   highlights: string[];

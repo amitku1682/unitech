@@ -16,6 +16,7 @@ import {
   Plus,
   Minus,
   Sparkles,
+  Package,
 } from "lucide-react";
 import { FlashSalePublicPayload } from "@/lib/types";
 import styles from "./FlashSalePopup.module.css";
@@ -23,6 +24,48 @@ import styles from "./FlashSalePopup.module.css";
 interface FlashSalePopupProps {
   previewData?: FlashSalePublicPayload | null;
   isMobilePreview?: boolean;
+}
+
+function KitItemThumbnail({
+  imageUrl,
+  name,
+  size = 32,
+}: {
+  imageUrl?: string;
+  name: string;
+  size?: number;
+}) {
+  const [hasError, setHasError] = useState(false);
+
+  if (!imageUrl || hasError) {
+    return (
+      <div
+        className={styles.fallbackIcon}
+        style={{ width: size, height: size }}
+        aria-hidden="true"
+      >
+        <Package className="w-4 h-4 text-slate-400" />
+      </div>
+    );
+  }
+
+  const normalizedSrc =
+    imageUrl.startsWith("http") || imageUrl.startsWith("/")
+      ? imageUrl
+      : `/${imageUrl}`;
+
+  return (
+    <Image
+      src={normalizedSrc}
+      alt=""
+      aria-hidden="true"
+      width={size}
+      height={size}
+      unoptimized
+      className={styles.itemImage}
+      onError={() => setHasError(true)}
+    />
+  );
 }
 
 export default function FlashSalePopup({
@@ -34,7 +77,9 @@ export default function FlashSalePopup({
     previewData || null
   );
   const [isOpen, setIsOpen] = useState<boolean>(!!previewData);
-  const [isMobile, setIsMobile] = useState<boolean>(isMobilePreview);
+  const [viewTier, setViewTier] = useState<"mobile" | "tablet" | "desktop">(
+    isMobilePreview ? "mobile" : "desktop"
+  );
   const [quantity, setQuantity] = useState<number>(1);
   const [isClaiming, setIsClaiming] = useState<boolean>(false);
   const [isClaimed, setIsClaimed] = useState<boolean>(false);
@@ -62,15 +107,22 @@ export default function FlashSalePopup({
     if (previewData) {
       setData(previewData);
       setIsOpen(true);
-      setIsMobile(isMobilePreview);
+      setViewTier(isMobilePreview ? "mobile" : "desktop");
     }
   }, [previewData, isMobilePreview]);
 
-  // Window resize listener to differentiate Desktop modal vs Mobile sheet
+  // Window resize listener to differentiate Mobile (<640), Tablet (640-1023), Desktop (>=1024)
   useEffect(() => {
     if (previewData) return;
     const checkWidth = () => {
-      setIsMobile(window.innerWidth < 768);
+      const w = window.innerWidth;
+      if (w < 640) {
+        setViewTier("mobile");
+      } else if (w < 1024) {
+        setViewTier("tablet");
+      } else {
+        setViewTier("desktop");
+      }
     };
     checkWidth();
     window.addEventListener("resize", checkWidth);
@@ -388,8 +440,8 @@ export default function FlashSalePopup({
     );
   }
 
-  // MOBILE BOTTOM SHEET (< 768px)
-  if (isMobile) {
+  // MOBILE BOTTOM SHEET (< 640px)
+  if (viewTier === "mobile") {
     return contentWrapper(
       <div className={styles.mobileSheet}>
         <div className={styles.mobileHandle} />
@@ -470,18 +522,12 @@ export default function FlashSalePopup({
             <div className={styles.gstNote}>{data.gstNote}</div>
           </div>
 
-          {/* Items in kit 2-col compact grid */}
+          {/* Items in kit */}
           <div className={styles.itemsHeading}>What&apos;s Included</div>
           <div className={styles.itemsGrid} style={{ marginBottom: 12 }}>
             {data.items.slice(0, 4).map((item) => (
               <div key={item.id} className={styles.itemCard} style={{ padding: "6px 8px" }}>
-                <Image
-                  src={item.imageUrl}
-                  alt={item.name}
-                  width={28}
-                  height={28}
-                  className={styles.itemImage}
-                />
+                <KitItemThumbnail imageUrl={item.imageUrl} name={item.name} size={28} />
                 <div className={styles.itemInfo}>
                   <div className={styles.itemTitleRow}>
                     <span className={styles.itemQty}>{item.qty}×</span>
@@ -585,7 +631,230 @@ export default function FlashSalePopup({
     );
   }
 
-  // DESKTOP MODAL (≥ 768px)
+  // TABLET SINGLE-COLUMN MODAL (640px–1023px)
+  if (viewTier === "tablet") {
+    return contentWrapper(
+      <div className={styles.tabletModal}>
+        <button
+          type="button"
+          className={styles.closeButton}
+          onClick={handleClose}
+          aria-label="Close"
+        >
+          <X className="w-4 h-4" />
+        </button>
+
+        <div className={styles.tabletContent}>
+          {/* Badges & Title */}
+          <div className={styles.badgeRow}>
+            <span className={styles.primaryBadge}>{data.badge}</span>
+            <span className={styles.secondaryBadge}>{data.badge2}</span>
+          </div>
+
+          <div className={styles.eyebrow}>{data.eyebrow}</div>
+          <h2 className={styles.title} style={{ fontSize: 22 }}>
+            {data.title}
+          </h2>
+          <p className={styles.subtitle} style={{ fontSize: 13, marginBottom: 14 }}>
+            {data.subtitle}
+          </p>
+
+          {/* Timer Card */}
+          <div className={styles.timerCard} style={{ marginBottom: 14 }}>
+            <div className={styles.timerLabel}>
+              <span className={styles.timerDot} />
+              <span>OFFER ENDS IN</span>
+            </div>
+            <div className={styles.timerSegments}>
+              <div className={styles.timerSeg}>
+                <span className={styles.timerVal}>{padZero(timeLeft.days)}</span>
+                <span className={styles.timerUnit}>Days</span>
+              </div>
+              <span className={styles.timerSep}>:</span>
+              <div className={styles.timerSeg}>
+                <span className={styles.timerVal}>{padZero(timeLeft.hours)}</span>
+                <span className={styles.timerUnit}>Hours</span>
+              </div>
+              <span className={styles.timerSep}>:</span>
+              <div className={styles.timerSeg}>
+                <span className={styles.timerVal}>{padZero(timeLeft.minutes)}</span>
+                <span className={styles.timerUnit}>Mins</span>
+              </div>
+              <span className={styles.timerSep}>:</span>
+              <div className={styles.timerSeg}>
+                <span className={styles.timerVal}>{padZero(timeLeft.seconds)}</span>
+                <span className={styles.timerUnit}>Secs</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Hero Visual Box */}
+          <div className={styles.tabletHeroBox}>
+            <Image
+              src={data.heroImageUrl}
+              alt={data.heroImageAlt || data.title}
+              width={300}
+              height={160}
+              className={styles.mobileHeroImg}
+              priority
+            />
+            {data.heroBadge && (
+              <div className={styles.heroBadge} style={{ top: 10, right: 10, padding: "4px 10px" }}>
+                <div className={styles.heroBadgeMain} style={{ fontSize: 14 }}>
+                  {data.heroBadge}
+                </div>
+                {data.heroBadgeCaption && (
+                  <div className={styles.heroBadgeSub} style={{ fontSize: 8 }}>
+                    {data.heroBadgeCaption}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Price Block */}
+          <div className={styles.priceSection} style={{ marginBottom: 14 }}>
+            <div className={styles.mrpRow}>
+              <span className={styles.mrpLabel}>Regular Price:</span>
+              <span className={styles.mrpVal}>₹{data.mrp.toLocaleString("en-IN")}</span>
+              <span className={styles.discountBadge}>{data.discount}% OFF</span>
+            </div>
+            <div className={styles.activePriceRow}>
+              <span className={styles.activePrice} style={{ fontSize: 32 }}>
+                ₹{data.price.toLocaleString("en-IN")}
+              </span>
+              <span className={styles.perUnit}>
+                (₹{data.perUnit.toLocaleString("en-IN")} / {data.unitLabel})
+              </span>
+            </div>
+            <div className={styles.gstNote}>{data.gstNote}</div>
+          </div>
+
+          {/* Kit Items */}
+          <div className={styles.itemsHeading}>What&apos;s Included In The Kit</div>
+          <div className={styles.itemsGrid} style={{ gridTemplateColumns: "1fr 1fr", marginBottom: 14 }}>
+            {data.items.slice(0, 4).map((item) => (
+              <div key={item.id} className={styles.itemCard}>
+                <KitItemThumbnail imageUrl={item.imageUrl} name={item.name} size={30} />
+                <div className={styles.itemInfo}>
+                  <div className={styles.itemTitleRow}>
+                    <span className={styles.itemQty}>{item.qty}×</span>
+                    <span className={styles.itemName}>
+                      {item.shortName || item.name}
+                    </span>
+                  </div>
+                  {item.spec && <div className={styles.itemSpec}>{item.spec}</div>}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Perks */}
+          <div className={styles.perksList} style={{ marginBottom: 14 }}>
+            {data.perks.map((perk, i) => (
+              <div key={i} className={styles.perkItem}>
+                <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0 font-bold" />
+                <span>{perk}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* Stock Urgency */}
+          <div className={styles.barSection} style={{ marginBottom: 16 }}>
+            <div className={styles.barRow}>
+              <div className={styles.barHeader}>
+                <span className="flex items-center gap-1 text-red-600 font-bold">
+                  <Flame className="w-3.5 h-3.5 fill-red-500" />
+                  Only {data.stockLeft} kits left in factory stock
+                </span>
+                <span>{data.stockLeft} of {data.stockTotal} kits left</span>
+              </div>
+              <div className={styles.barTrack}>
+                <div
+                  className={styles.barFillRed}
+                  style={{ width: `${Math.max(6, 100 - data.stockPct)}%` }}
+                />
+              </div>
+            </div>
+          </div>
+
+          {claimError && (
+            <div className="p-2.5 mb-3 text-xs bg-red-50 text-red-700 border border-red-200 rounded-lg">
+              {claimError}
+            </div>
+          )}
+
+          {/* Quantity & Claim Button */}
+          <div className={styles.tabletCtaRow}>
+            <div className={styles.qtyRow} style={{ marginBottom: 0 }}>
+              <span className={styles.qtyLabel}>Quantity:</span>
+              <div className={styles.qtyControls}>
+                <button
+                  type="button"
+                  className={styles.qtyBtn}
+                  onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                  disabled={quantity <= 1 || isClaiming}
+                  aria-label="Decrease quantity"
+                >
+                  <Minus className="w-3.5 h-3.5" />
+                </button>
+                <span className={styles.qtyVal}>{quantity}</span>
+                <button
+                  type="button"
+                  className={styles.qtyBtn}
+                  onClick={() =>
+                    setQuantity((q) => Math.min(Math.min(10, data.stockLeft), q + 1))
+                  }
+                  disabled={quantity >= Math.min(10, data.stockLeft) || isClaiming}
+                  aria-label="Increase quantity"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              className={styles.claimButton}
+              style={{ flex: 1, minWidth: 200 }}
+              onClick={handleClaimOffer}
+              disabled={isClaiming || data.stockLeft <= 0}
+            >
+              <div className={styles.claimShine} />
+              <ShoppingBag className="w-4 h-4" />
+              <span>
+                {isClaiming
+                  ? "Securing Factory Price..."
+                  : `${data.ctaLabel} (₹${(data.price * quantity).toLocaleString("en-IN")})`}
+              </span>
+            </button>
+          </div>
+
+          {/* Secondary Actions */}
+          <div className={styles.secondaryRow}>
+            <a
+              href={whatsappLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.whatsappBtn}
+            >
+              <MessageCircle className="w-4 h-4" />
+              Chat on WhatsApp
+            </a>
+            <Link
+              href={data.bulkUrl || "/inquiry"}
+              onClick={handleClose}
+              className={styles.bulkBtn}
+            >
+              {data.bulkLabel}
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // DESKTOP MODAL (≥ 1024px)
   return contentWrapper(
     <div className={styles.dialog}>
       <button
@@ -636,13 +905,7 @@ export default function FlashSalePopup({
           <div className={styles.itemsGrid}>
             {data.items.slice(0, 4).map((item) => (
               <div key={item.id} className={styles.itemCard}>
-                <Image
-                  src={item.imageUrl}
-                  alt={item.name}
-                  width={32}
-                  height={32}
-                  className={styles.itemImage}
-                />
+                <KitItemThumbnail imageUrl={item.imageUrl} name={item.name} size={32} />
                 <div className={styles.itemInfo}>
                   <div className={styles.itemTitleRow}>
                     <span className={styles.itemQty}>{item.qty}×</span>

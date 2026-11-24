@@ -169,12 +169,6 @@ export function SpecsModal({ product, onClose, onAddToCart }: SpecsModalProps) {
                 <span className="text-slate-900 font-medium col-span-2">{specVal}</span>
               </div>
             ))}
-            <div className="grid grid-cols-3 p-3 bg-slate-50/50 hover:bg-slate-50">
-              <span className="font-bold text-slate-600 col-span-1">Warranty</span>
-              <span className="text-emerald-700 font-bold col-span-2">
-                {product.warrantyYears} Years Manufacturer Replacement Warranty
-              </span>
-            </div>
           </div>
         </div>
       </div>

@@ -28,6 +28,7 @@ import {
   TrendingUp,
   Flame,
   Check,
+  X,
 } from "lucide-react";
 import {
   FlashSaleData,
@@ -326,6 +327,48 @@ export function FlashSaleEditor({ onNotify }: FlashSaleEditorProps) {
       reader.readAsDataURL(file);
     } finally {
       setIsUploading(false);
+    }
+  };
+
+  const handleItemFileUpload = async (idx: number, e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 3 * 1024 * 1024) {
+      if (onNotify) onNotify("Image file exceeds 3 MB limit.", true);
+      return;
+    }
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const res = await fetch("/api/products/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      const json = await res.json();
+      if (res.ok && json.success && json.fileUrl) {
+        handleUpdateItem(idx, "imageUrl", json.fileUrl);
+        if (onNotify) onNotify(`Image uploaded for item #${idx + 1}`);
+      } else {
+        const reader = new FileReader();
+        reader.onload = () => {
+          if (typeof reader.result === "string") {
+            handleUpdateItem(idx, "imageUrl", reader.result as string);
+          }
+        };
+        reader.readAsDataURL(file);
+      }
+    } catch (err) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        if (typeof reader.result === "string") {
+          handleUpdateItem(idx, "imageUrl", reader.result as string);
+        }
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -1038,7 +1081,7 @@ export function FlashSaleEditor({ onNotify }: FlashSaleEditorProps) {
                       />
                     </div>
 
-                    <div className="sm:col-span-7">
+                    <div className="sm:col-span-12">
                       <label className="block text-[10px] font-bold text-slate-600 mb-0.5">Specification</label>
                       <input
                         type="text"
@@ -1048,14 +1091,80 @@ export function FlashSaleEditor({ onNotify }: FlashSaleEditorProps) {
                       />
                     </div>
 
-                    <div className="sm:col-span-5">
-                      <label className="block text-[10px] font-bold text-slate-600 mb-0.5">Image URL</label>
-                      <input
-                        type="text"
-                        value={item.imageUrl}
-                        onChange={(e) => handleUpdateItem(idx, "imageUrl", e.target.value)}
-                        className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white font-mono text-[10px]"
-                      />
+                    <div className="sm:col-span-12 space-y-1.5 pt-1.5 border-t border-slate-100">
+                      <label className="block text-[10px] font-bold text-slate-700">Item Image & Media</label>
+                      <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+                        {/* Thumbnail preview */}
+                        <div className="w-9 h-9 rounded-lg border border-slate-200 bg-slate-50 flex items-center justify-center shrink-0 overflow-hidden">
+                          {item.imageUrl ? (
+                            <img
+                              src={item.imageUrl}
+                              alt=""
+                              className="w-full h-full object-contain p-0.5"
+                              onError={(e) => {
+                                (e.currentTarget as HTMLElement).style.display = "none";
+                              }}
+                            />
+                          ) : (
+                            <Package className="w-4 h-4 text-slate-300" />
+                          )}
+                        </div>
+
+                        {/* URL input field */}
+                        <input
+                          type="text"
+                          value={item.imageUrl}
+                          onChange={(e) => handleUpdateItem(idx, "imageUrl", e.target.value)}
+                          placeholder="Image URL or upload..."
+                          className="flex-1 min-w-[140px] px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white font-mono text-[10px] text-slate-800"
+                        />
+
+                        {/* Upload button with hidden file input */}
+                        <input
+                          type="file"
+                          id={`item-file-${idx}`}
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => handleItemFileUpload(idx, e)}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => document.getElementById(`item-file-${idx}`)?.click()}
+                          className="px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-bold flex items-center gap-1 border border-slate-200 shrink-0"
+                          title="Upload image"
+                        >
+                          <Upload className="w-3 h-3" />
+                          <span>Upload</span>
+                        </button>
+
+                        {/* Remove image button */}
+                        {item.imageUrl && (
+                          <button
+                            type="button"
+                            onClick={() => handleUpdateItem(idx, "imageUrl", "")}
+                            className="px-2 py-1.5 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 text-[11px] font-semibold flex items-center gap-1 border border-red-200 shrink-0"
+                            title="Remove image"
+                          >
+                            <X className="w-3 h-3" />
+                            <span>Remove</span>
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Quick Pick chips */}
+                      <div className="flex items-center gap-1.5 flex-wrap pt-0.5">
+                        <span className="text-[9px] text-slate-400 font-semibold">Quick Pick:</span>
+                        {PRESET_IMAGES.map((p, pIdx) => (
+                          <button
+                            key={pIdx}
+                            type="button"
+                            onClick={() => handleUpdateItem(idx, "imageUrl", p.url)}
+                            className="text-[9px] px-1.5 py-0.5 rounded bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200"
+                          >
+                            {p.label}
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </div>

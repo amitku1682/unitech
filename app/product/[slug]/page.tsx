@@ -17,7 +17,7 @@ import {
   ShoppingBag,
   MessageCircle,
   Truck,
-  RotateCcw,
+  Receipt,
   Star,
   CheckCircle2,
   Cpu,
@@ -261,6 +261,26 @@ Hello Unitech Sales Desk, please confirm immediate factory availability and shar
     }
   };
 
+  const trustCardsElement = (
+    <div className="grid grid-cols-3 gap-2.5 sm:gap-3 text-center text-xs">
+      <div className="p-3 sm:p-3.5 bg-white rounded-2xl border border-slate-200/90 shadow-2xs">
+        <Truck className="w-4 h-4 text-unitech-red mx-auto mb-1.5" />
+        <span className="font-bold text-slate-800 block text-xs">Pan-India</span>
+        <span className="text-[10px] text-slate-500">From Sahibabad</span>
+      </div>
+      <div className="p-3 sm:p-3.5 bg-white rounded-2xl border border-slate-200/90 shadow-2xs">
+        <Receipt className="w-4 h-4 text-emerald-600 mx-auto mb-1.5" />
+        <span className="font-bold text-slate-800 block text-xs">GST Invoice</span>
+        <span className="text-[10px] text-slate-500">Full ITC claim</span>
+      </div>
+      <div className="p-3 sm:p-3.5 bg-white rounded-2xl border border-slate-200/90 shadow-2xs">
+        <ShieldCheck className="w-4 h-4 text-slate-700 mx-auto mb-1.5" />
+        <span className="font-bold text-slate-800 block text-xs">BIS & CE</span>
+        <span className="text-[10px] text-slate-500">GeM OEM</span>
+      </div>
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-[#faf9f5] flex flex-col">
       <Navbar />
@@ -303,39 +323,10 @@ Hello Unitech Sales Desk, please confirm immediate factory availability and shar
               <ProductGallery product={product} />
             </div>
 
-            {/* Quick Badges Strip */}
-            <div className="grid grid-cols-3 gap-2.5 sm:gap-3 text-center text-xs">
-              <div className="p-3 sm:p-3.5 bg-white rounded-2xl border border-slate-200/90 shadow-2xs">
-                <Truck className="w-4 h-4 text-unitech-red mx-auto mb-1.5" />
-                <span className="font-bold text-slate-800 block text-xs">Pan-India</span>
-                <span className="text-[10px] text-slate-500">From Sahibabad</span>
-              </div>
-              <div className="p-3 sm:p-3.5 bg-white rounded-2xl border border-slate-200/90 shadow-2xs">
-                <RotateCcw className="w-4 h-4 text-emerald-600 mx-auto mb-1.5" />
-                <span className="font-bold text-slate-800 block text-xs">{product.warrantyYears}-Yr Warranty</span>
-                <span className="text-[10px] text-slate-500">Factory RMA</span>
-              </div>
-              <div className="p-3 sm:p-3.5 bg-white rounded-2xl border border-slate-200/90 shadow-2xs">
-                <ShieldCheck className="w-4 h-4 text-slate-700 mx-auto mb-1.5" />
-                <span className="font-bold text-slate-800 block text-xs">BIS & CE</span>
-                <span className="text-[10px] text-slate-500">GeM OEM</span>
-              </div>
+            {/* Quick Badges Strip on Desktop (≥ 1024px) */}
+            <div className="hidden lg:block">
+              {trustCardsElement}
             </div>
-
-            {/* Engineering Highlights - Positioned Below the 3 Badges */}
-            {product.highlights && product.highlights.length > 0 && (
-              <div className="space-y-2 pt-1">
-                <span className="text-xs sm:text-sm font-bold text-slate-900 block">Engineering Highlights:</span>
-                <div className={`grid gap-2 text-xs sm:text-sm text-slate-700 ${product.highlights.length === 1 ? "grid-cols-1" : "grid-cols-1 sm:grid-cols-2"}`}>
-                  {product.highlights.map((hl, idx) => (
-                    <div key={idx} className="flex items-center gap-2.5 p-3 bg-white rounded-xl sm:rounded-2xl border border-slate-200/80 shadow-2xs">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                      <span className="text-xs sm:text-[13px] font-medium">{hl}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
 
           {/* Right Column: Specifications & Purchasing Tiers */}
@@ -539,6 +530,31 @@ Hello Unitech Sales Desk, please confirm immediate factory availability and shar
                   </div>
                 ))}
               </div>
+            </div>
+
+            {/* Engineering Highlights - Positioned directly below Technical Specifications Matrix */}
+            {product.highlights && product.highlights.length > 0 && (
+              <div className="bg-white rounded-2xl sm:rounded-3xl p-5 sm:p-6 border border-slate-200/90 shadow-xs space-y-3.5">
+                <div className="flex items-center gap-2 pb-3 border-b border-slate-100">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                  <h3 className="font-heading font-black text-slate-950 text-sm sm:text-base">
+                    Engineering Highlights
+                  </h3>
+                </div>
+                <div className={`grid gap-2.5 text-xs sm:text-sm text-slate-700 ${product.highlights.length === 1 ? "grid-cols-1" : "grid-cols-1 sm:grid-cols-2"}`}>
+                  {product.highlights.map((hl, idx) => (
+                    <div key={idx} className="flex items-start gap-2.5 p-3 bg-slate-50/70 rounded-xl sm:rounded-2xl border border-slate-200/80">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                      <span className="text-xs sm:text-[13px] font-medium leading-relaxed">{hl}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Quick Badges Strip on Mobile (< 1024px) */}
+            <div className="block lg:hidden pt-1">
+              {trustCardsElement}
             </div>
           </div>
         </div>
